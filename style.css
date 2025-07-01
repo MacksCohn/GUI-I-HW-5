@@ -1,1 +1,15 @@
 /* Max Cohn */
+body {
+    display: block;
+}
+
+#main-line {
+    width: calc(100% - 2%*2);
+    padding: 2% 2%;
+}
+
+#tile-holder {
+    display: block;
+    width: 50%;
+    margin: 20px auto;
+}
