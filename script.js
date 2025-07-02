@@ -312,34 +312,6 @@ function FirstAvailableHolderSlot($holder) {
     return $slot;
 }
 
-$(document).ready(function () { 
-    GenerateTileSlots();
-    GenerateHand();
-    GenerateHolderSlots('.holder-container', 7);
-
-    InitializeDragAndDroppables();
-
-    PutTilesInHolder();
-    
-    $('#play-word').on('click', function() { SubmitCurrentWord() });
-
-    $('.row-0 #slot2').data('multiplier', 2);
-    $('.row-0 #slot2').data('fullWord', true);
-    $('.row-0 #slot6').data('multiplier', 2);
-    $('.row-0 #slot6').data('fullWord', false);
-    $('.row-0 #slot8').data('multiplier', 2);
-    $('.row-0 #slot8').data('fullWord', false);
-    $('.row-0 #slot12').data('multiplier', 2);
-    $('.row-0 #slot12').data('fullWord', true);
-});
-
-// function to keep the lines the correct position on resize of the window
-let resizeTimer;
-$(window).resize(function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(DoResize, 100);
-});
-
 function DoResize() {
     TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
     TILE_HEIGHT = $('#main-line').height() - $('#main-line').height() * (8/64);
@@ -372,4 +344,32 @@ function DoResize() {
         }
     });
 }
+
+$(document).ready(function () { 
+    GenerateTileSlots();
+    GenerateHand();
+    GenerateHolderSlots('.holder-container', 7);
+
+    InitializeDragAndDroppables();
+
+    PutTilesInHolder();
+    
+    $('#play-word').on('click', function() { SubmitCurrentWord() });
+
+    $('.row-0 #slot2').data('multiplier', 2);
+    $('.row-0 #slot2').data('fullWord', true);
+    $('.row-0 #slot6').data('multiplier', 2);
+    $('.row-0 #slot6').data('fullWord', false);
+    $('.row-0 #slot8').data('multiplier', 2);
+    $('.row-0 #slot8').data('fullWord', false);
+    $('.row-0 #slot12').data('multiplier', 2);
+    $('.row-0 #slot12').data('fullWord', true);
+});
+
+// function to keep the lines the correct position on resize of the window
+let resizeTimer;
+$(window).resize(function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(DoResize, 100);
+});
 
