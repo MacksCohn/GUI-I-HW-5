@@ -2,6 +2,9 @@
 const A_ASCII = 65;
 const LAST_ASCII = A_ASCII + 26;
 const NUM_COLUMNS = 15; 
+var TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
+var TILE_HEIGHT = $('#main-line').height() - $('#main-line').height() * (8/64);
+var TILE_PADDING = $('#main-line').width() * (4/960);
 
 const quantities = {
     'A' : 9, 'B' : 2,
@@ -47,37 +50,52 @@ for (let i = 0; i < quantities[' ']; i++) {
     letterBag.push(' ');
 }
 
-function pickNewLetter() {
+function pickLetter() {
     const indexOfLetter = Math.floor(Math.random() * letterBag.length);
     const letter = letterBag[indexOfLetter];
     letterBag.splice(indexOfLetter, 1);
-    
+
     return letter;
 }
 
-function newHand() {
-    let hand = [];
-    let numToPull = letterBag.length >= 7 ? 7 : letterBag.length;
-    for (let i = 0; i < numToPull; i++)
-        hand.push(pickNewLetter());
-    return hand;
-}
-
 function GenerateTileSlots() {
-    const TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
-    const TILE_PADDING = $('#main-line').width() * (4/960);
     const $mainLine = $('#main-line');
     for (let tileColumn = 0; tileColumn < NUM_COLUMNS; tileColumn++) {
-        const $newTile = $('<div class="tile-slot"></div>');
+        const $newTile = $('<div class="tile-slot" id="slot' + tileColumn + '"' + '"></div>');
         $newTile.css({'left' : TILE_PADDING + tileColumn * (TILE_WIDTH + TILE_PADDING * 2)});
-        $newTile.addClass('droppable immovable');
-        addClasses: 'immovable',
+        $newTile.addClass('droppable');
         $mainLine.before($newTile);
+    }
+}
+
+function GenerateHolderSlots(parent, numColumns) {
+    const $parent = $(parent);
+    for (let tileColumn = 0; tileColumn < numColumns; tileColumn++) {
+        const $newTile = $('<div class="tile-slot in-holder"></div>');
+        $newTile.css({
+            'left' : $parent.width() * .08 + tileColumn * (TILE_WIDTH + TILE_PADDING * 2), 
+            'width' : TILE_WIDTH,
+            'height': TILE_HEIGHT,
+            'top': '30%',
+        });
+        $newTile.addClass('droppable');
+        $parent.append($newTile);
+    }
+}
+function PutTilesInHolder() {
+    const holderSlots = $('.tile-slot.in-holder.droppable');
+    const tiles = $('.tile.draggable');
+    if (holderSlots.length >= tiles.length) {
+        for (let i = 0; i < tiles.length; i++)
+            $(holderSlots[i]).droppable('option', 'drop').call(
+                $(holderSlots[i]), {}, { draggable: $(tiles[i]) }
+            );
     }
 }
 
 function GenerateHand() {
     let hand = newHand();
+    let index = 1;
     hand.forEach(tile => {
         const $holder = $('.holder-container');
         let $tile;
@@ -87,55 +105,86 @@ function GenerateHand() {
             $tile = $('<img src="./img/Scrabble_Tile_' + tile + '.jpg">');
         $tile.addClass('tile');
         $tile.addClass('draggable');
-        $holder.append($tile);
-        ResizeTiles($tile);
+        $tile.attr('id', 'tile' + (index + letterBag.length));
+        $holder.after($tile);
+        ResizeTile($tile);
+        index++;
     });
-    console.log(hand);
 }
 
-function ResizeTiles($tile) {
+function newHand() {
+    let hand = [];
+    let numToPull = letterBag.length >= 7 ? 7 : letterBag.length;
+    for (let i = 0; i < numToPull; i++)
+        hand.push(pickLetter());
+    return hand;
+}
+
+function ResizeTile($tile) {
     const $tileSlot = $('.tile-slot').first();
     $tile.width($tileSlot.width());
     $tile.height($tileSlot.height());
 }
 
-$(document).ready(function () { 
-    GenerateTileSlots();
-    GenerateHand();
+function InitializeDragAndDroppables() {
     $('.draggable').draggable({
         snapTolerance: 100,
         revert: 'invalid',
     });
     $('.droppable').droppable({
         accept: '.draggable',
-        drop: function(_, ui) {
-            $(this).addClass('occupied');
-            ui.draggable.position({
+        drop: function(_, $ui) {
+            $ui.draggable.position({
                 my: 'center',
                 at: 'center',
                 of: $(this),
                 using: function(pos) {
-                    $(this).animate(pos, 200, 'swing');
+                    $(this).animate(pos, 50, 'swing');
                 }
             });
-            $(this).droppable('option', 'disabled', true);
-        },
-        out: function() {
-            $(this).removeClass('placed');
+            // set parent and child exclusively to a pair
+            if ($ui.draggable.data('parent') != undefined) {
+                $('#' + $ui.draggable.data('parent')).data('child', null);
+            }
+            $ui.draggable.data('parent', $(this).attr('id'));
+            $(this).data('child', $ui.draggable.attr('id'));
         },
     });
+}
+
+$(document).ready(function () { 
+    GenerateTileSlots();
+    GenerateHand();
+    GenerateHolderSlots('.holder-container', 7);
+
+    InitializeDragAndDroppables();
+
+    PutTilesInHolder();
 });
 
 // function to keep the lines the correct position on resize of the window
 $(window).resize(function () {
-    const TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
-    const TILE_PADDING = $('#main-line').width() * (4/960);
+    TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
+    TILE_HEIGHT = $('#main-line').height() - $('#main-line').height() * (8/64);
+    TILE_PADDING = $('#main-line').width() * (4/960);
     let tileColumn = 0;
-    $('.tile-slot').each(function() {
+
+    $('.tile-slot:not(.in-holder)').each(function() {
         $(this).css({'left' : TILE_PADDING + tileColumn * (TILE_WIDTH + TILE_PADDING * 2)});
         tileColumn++;
     });
+    tileColumn = 0;
+    $('.tile-slot.in-holder').each(function() {
+        $(this).css({
+            'left' : $('.holder-container').width() * .08 + tileColumn * (TILE_WIDTH + TILE_PADDING * 2), 
+            'top': '30%',
+            'width' : TILE_WIDTH,
+            'height': TILE_HEIGHT,
+        });
+        tileColumn++;
+    });
+
     $('.tile').each(function() {
-        ResizeTiles($(this));
+        ResizeTile($(this));
     });
 });

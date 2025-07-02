@@ -13,11 +13,16 @@ body {
     width:100%;
 }
 
+.holder-container {
+    width:fit-content;
+    height: fit-content;
+    margin: 20px auto;
+    position:relative;
+}
+
 #tile-holder {
     display: block;
-    width: 50%;
-    margin: 20px auto;
-    user-select: none;
+    width: 50vw;
 }
 
 /* Notes about the tile image
@@ -35,13 +40,19 @@ body {
 
 .tile-slot:hover, .ui-droppable-hover {
     background-color: #2222EE22;
+    border-radius: 8px;
 }
 
 .draggable {
     width: fit-content;
 }
 
-.immovable, img {
+img {
     user-select: none;
     -webkit-user-drag: none;
+}
+
+.tile {
+    filter: drop-shadow(2px 2px 5px #000000AA);
+    transform-origin: center center;
 }
