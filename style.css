@@ -3,13 +3,45 @@ body {
     display: block;
 }
 
+.line-container {
+    position: relative;
+    width: 96%;
+    margin: 0 auto;
+}
+
 #main-line {
-    width: calc(100% - 2%*2);
-    padding: 2% 2%;
+    width:100%;
 }
 
 #tile-holder {
     display: block;
     width: 50%;
     margin: 20px auto;
+    user-select: none;
+}
+
+/* Notes about the tile image
+ * There are 16 padding lines, 6px wide
+ * 7px wide top and 6px bottom
+ * so the tile height is 80px - 13px = 67/80 = 83.75%
+ */
+.tile-slot {
+    position: absolute;
+    top:calc(4/64 * 100%);
+    height: calc(100% - (8/64 * 100%));
+    width: calc((100%)/15 - (8/960 * 100%));
+    text-align: center;
+}
+
+.tile-slot:hover, .ui-droppable-hover {
+    background-color: #2222EE22;
+}
+
+.draggable {
+    width: fit-content;
+}
+
+.immovable, img {
+    user-select: none;
+    -webkit-user-drag: none;
 }
