@@ -38,6 +38,7 @@ const scores = {
     'Y' : 4, 'Z' : 10,
     ' ' : 0,
 }
+
 let letterBag = [];
 // Fill the letter bag
 for (let currentLetter = A_ASCII; currentLetter < LAST_ASCII; currentLetter++) {
@@ -364,6 +365,8 @@ $(document).ready(function () {
     $('.row-0 #slot8').data('fullWord', false);
     $('.row-0 #slot12').data('multiplier', 2);
     $('.row-0 #slot12').data('fullWord', true);
+
+    DoResize();
 });
 
 // function to keep the lines the correct position on resize of the window
