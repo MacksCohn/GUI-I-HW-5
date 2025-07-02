@@ -71,7 +71,7 @@ function GenerateTileSlots() {
 function GenerateHolderSlots(parent, numColumns) {
     const $parent = $(parent);
     for (let tileColumn = 0; tileColumn < numColumns; tileColumn++) {
-        const $newTile = $('<div class="tile-slot in-holder"></div>');
+        const $newTile = $('<div class="tile-slot in-holder" id="holder' + tileColumn + '"></div>');
         $newTile.css({
             'left' : $parent.width() * .08 + tileColumn * (TILE_WIDTH + TILE_PADDING * 2), 
             'width' : TILE_WIDTH,
@@ -106,6 +106,7 @@ function GenerateHand() {
         $tile.addClass('tile');
         $tile.addClass('draggable');
         $tile.attr('id', 'tile' + (index + letterBag.length));
+        $tile.attr('name', tile);
         $holder.after($tile);
         ResizeTile($tile);
         index++;
@@ -130,11 +131,12 @@ function InitializeDragAndDroppables() {
     $('.draggable').draggable({
         snapTolerance: 100,
         revert: 'invalid',
+        revertDuration: 200,
     });
     $('.droppable').droppable({
-        accept: '.draggable',
-        drop: function(_, $ui) {
-            $ui.draggable.position({
+        accept: '.tile.draggable',
+        drop: function(_, $held) {
+            $held.draggable.position({
                 my: 'center',
                 at: 'center',
                 of: $(this),
@@ -142,14 +144,38 @@ function InitializeDragAndDroppables() {
                     $(this).animate(pos, 50, 'swing');
                 }
             });
-            // set parent and child exclusively to a pair
-            if ($ui.draggable.data('parent') != undefined) {
-                $('#' + $ui.draggable.data('parent')).data('child', null);
+            if ($(this).attr('id') == $held.draggable.data('parent'))
+                return;
+
+            const currentTile = $(this).data('child');
+            if (currentTile != null && currentTile != undefined) {
+                SwapTiles(currentTile, $held.draggable.attr('id'));
+                return;
             }
-            $ui.draggable.data('parent', $(this).attr('id'));
-            $(this).data('child', $ui.draggable.attr('id'));
+            else if ($held.draggable.data('parent') != undefined) // set parent and child exclusively to a pair
+                $('#' + $held.draggable.data('parent')).data('child', null);
+
+
+            $held.draggable.data('parent', $(this).attr('id'));
+            $(this).data('child', $held.draggable.attr('id'));
         },
     });
+}
+
+function SwapTiles(currentTile, heldTile) {
+    const $currentTile = $('#' + currentTile);
+    const $heldTile = $('#' + heldTile);
+    // set parents to empty
+    const $currentParent = $('#' + $currentTile.data('parent'));
+    const $heldParent = $('#' + $heldTile.data('parent'));
+    $currentParent.data('child', null);
+    $heldParent.data('child', null);
+    // do the swap
+    $currentParent.droppable('option', 'drop').call($currentParent, {}, {draggable : $heldTile});
+    $heldParent.droppable('option', 'drop').call($heldParent, {}, {draggable : $currentTile});
+    // correct the children 
+    $heldParent.data('child', $currentTile.attr('id'));
+    $currentParent.data('child', $heldTile.attr('id'));
 }
 
 $(document).ready(function () { 
@@ -163,7 +189,13 @@ $(document).ready(function () {
 });
 
 // function to keep the lines the correct position on resize of the window
+let resizeTimer;
 $(window).resize(function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(DoResize, 300);
+});
+
+function DoResize() {
     TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
     TILE_HEIGHT = $('#main-line').height() - $('#main-line').height() * (8/64);
     TILE_PADDING = $('#main-line').width() * (4/960);
@@ -187,4 +219,11 @@ $(window).resize(function () {
     $('.tile').each(function() {
         ResizeTile($(this));
     });
-});
+
+    $('.ui-droppable').each(function() {
+        const child = $(this).data('child');
+        if (child != null && child != undefined) {
+            $(this).droppable('option','drop').call($(this), {}, { draggable: $('#' + child) });
+        }
+    });
+}

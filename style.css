@@ -47,7 +47,7 @@ body {
     width: fit-content;
 }
 
-img {
+.immovable, img {
     user-select: none;
     -webkit-user-drag: none;
 }
@@ -55,4 +55,10 @@ img {
 .tile {
     filter: drop-shadow(2px 2px 5px #000000AA);
     transform-origin: center center;
+}
+
+#score-container {
+    width:fit-content;
+    height:fit-content;
+    margin: 20px auto;
 }
