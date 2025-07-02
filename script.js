@@ -50,20 +50,14 @@ for (let i = 0; i < quantities[' ']; i++) {
     letterBag.push(' ');
 }
 
-function pickLetter() {
-    const indexOfLetter = Math.floor(Math.random() * letterBag.length);
-    const letter = letterBag[indexOfLetter];
-    letterBag.splice(indexOfLetter, 1);
-
-    return letter;
-}
-
 function GenerateTileSlots() {
     const $mainLine = $('#main-line');
     for (let tileColumn = 0; tileColumn < NUM_COLUMNS; tileColumn++) {
         const $newTile = $('<div class="tile-slot" id="slot' + tileColumn + '"' + '"></div>');
         $newTile.css({'left' : TILE_PADDING + tileColumn * (TILE_WIDTH + TILE_PADDING * 2)});
         $newTile.addClass('droppable');
+        $newTile.data('multiplier', 1);
+        $newTile.data('fullWord', false);
         $mainLine.before($newTile);
     }
 }
@@ -82,19 +76,9 @@ function GenerateHolderSlots(parent, numColumns) {
         $parent.append($newTile);
     }
 }
-function PutTilesInHolder() {
-    const holderSlots = $('.tile-slot.in-holder.droppable');
-    const tiles = $('.tile.draggable');
-    if (holderSlots.length >= tiles.length) {
-        for (let i = 0; i < tiles.length; i++)
-            $(holderSlots[i]).droppable('option', 'drop').call(
-                $(holderSlots[i]), {}, { draggable: $(tiles[i]) }
-            );
-    }
-}
 
 function GenerateHand() {
-    let hand = newHand();
+    let hand = newHand(7);
     let index = 1;
     hand.forEach(tile => {
         const $holder = $('.holder-container');
@@ -113,18 +97,27 @@ function GenerateHand() {
     });
 }
 
-function newHand() {
-    let hand = [];
-    let numToPull = letterBag.length >= 7 ? 7 : letterBag.length;
-    for (let i = 0; i < numToPull; i++)
-        hand.push(pickLetter());
-    return hand;
-}
-
-function ResizeTile($tile) {
-    const $tileSlot = $('.tile-slot').first();
-    $tile.width($tileSlot.width());
-    $tile.height($tileSlot.height());
+function GenerateNewTiles() {
+    let numToPull = 7 - $('.tile').length;
+    let hand = newHand(numToPull);
+    let index = 1;
+    hand.forEach(tile => {
+        const $holder = $('.holder-container');
+        let $tile;
+        if (tile === ' ')
+            $tile = $('<img src="./img/Scrabble_Tile_Blank.jpg">');
+        else
+            $tile = $('<img src="./img/Scrabble_Tile_' + tile + '.jpg">');
+        $tile.addClass('tile');
+        $tile.addClass('draggable');
+        $tile.addClass('homeless');
+        $tile.attr('id', 'tile' + (index + letterBag.length));
+        $tile.attr('name', tile);
+        $holder.after($tile);
+        ResizeTile($tile);
+        index++;
+    });
+    InitializeDragAndDroppables();
 }
 
 function InitializeDragAndDroppables() {
@@ -144,22 +137,84 @@ function InitializeDragAndDroppables() {
                     $(this).animate(pos, 50, 'swing');
                 }
             });
-            if ($(this).attr('id') == $held.draggable.data('parent'))
+            if ($(this).attr('id') === $held.draggable.data('parent'))
                 return;
 
             const currentTile = $(this).data('child');
             if (currentTile != null && currentTile != undefined) {
                 SwapTiles(currentTile, $held.draggable.attr('id'));
-                return;
             }
-            else if ($held.draggable.data('parent') != undefined) // set parent and child exclusively to a pair
+            else if ($held.draggable.data('parent') != undefined) { // set parent and child exclusively to a pair
+                // should it update the score
+                data = GetRowAndColumn($('#' + $held.draggable.data('parent')));
+
                 $('#' + $held.draggable.data('parent')).data('child', null);
+                $held.draggable.data('parent', $(this).attr('id'));
+                $(this).data('child', $held.draggable.attr('id'));
 
+                // do that updating
+                if (data.row != null && data.column != null)
+                    UpdateWordScore(data.row, data.column);
+            }
+            else {
+                $held.draggable.data('parent', $(this).attr('id'));
+                $(this).data('child', $held.draggable.attr('id'));
+            }
 
-            $held.draggable.data('parent', $(this).attr('id'));
-            $(this).data('child', $held.draggable.attr('id'));
+            data = GetRowAndColumn($(this));
+            if (data.row != null && data.column != null)
+                UpdateWordScore(data.row, data.column);
         },
     });
+}
+
+function ResizeTile($tile) {
+    const $tileSlot = $('.tile-slot').first();
+    $tile.width($tileSlot.width());
+    $tile.height($tileSlot.height());
+}
+
+function PutTilesInHolder() {
+    const holderSlots = $('.tile-slot.in-holder.droppable');
+    const tiles = $('.tile.draggable');
+    if (holderSlots.length >= tiles.length) {
+        for (let i = 0; i < tiles.length; i++)
+            $(holderSlots[i]).droppable('option', 'drop').call(
+                $(holderSlots[i]), {}, { draggable: $(tiles[i]) }
+            );
+    }
+}
+
+function newHand(amount) {
+    let hand = [];
+    let numToPull = letterBag.length >= amount ? amount : letterBag.length;
+    for (let i = 0; i < numToPull; i++)
+        hand.push(PickLetter());
+    return hand;
+}
+
+function PickLetter() {
+    const indexOfLetter = Math.floor(Math.random() * letterBag.length);
+    const letter = letterBag[indexOfLetter];
+    letterBag.splice(indexOfLetter, 1);
+
+    return letter;
+}
+
+
+function GetRowAndColumn($droppable) {
+    data = {
+        row : null,
+        column : null
+    }
+    let parentClasses = $droppable.parent().attr('class');
+    if (parentClasses.includes('row')) {
+        data.row = parentClasses.substring(parentClasses.indexOf('row'));
+        if (data.row.indexOf(' ') != -1)
+            data.row = data.row.substring(0, data.row.indexOf(' '));
+        data.column = $droppable.attr('id');
+    }
+    return data;
 }
 
 function SwapTiles(currentTile, heldTile) {
@@ -178,6 +233,85 @@ function SwapTiles(currentTile, heldTile) {
     $currentParent.data('child', $heldTile.attr('id'));
 }
 
+function UpdateWordScore(row, column) {
+    const $score = $('#word-value');
+    const $word = $('#current-word');
+    const $row = $('.' + row);
+    let score = 0;
+    let word = '';
+    let wordMultiplier = 1;
+    $row.children('.tile-slot').each(function() {
+        if ($(this).data('child') != null && $(this).data('child') != undefined) {
+            score += ScoreTile($(this));
+            if ($(this).data('fullWord'))
+                wordMultiplier *= $(this).data('multiplier');
+            word += $('#' + $(this).data('child')).attr('name');
+        }
+        else if (word != '')
+            return false;
+    });
+    $score.text(score * wordMultiplier);
+    $word.text(word);
+}
+
+function ScoreTile($tile) {
+    let multiplier = $tile.data('fullWord') ? 1 : $tile.data('multiplier');
+    if ($tile.data('child') != null && $tile.data('child') != undefined)
+        return scores[$('#' + $tile.data('child')).attr('name')] * multiplier;
+    return 0;
+}
+
+function SubmitCurrentWord() {
+    const currentTotal = parseInt($('#total-score').text());
+    const currentScore = parseInt($('#word-value').text());
+    $('#total-score').text(currentTotal + currentScore);
+    const $row = $('.row-0');
+    let destroy = true;
+    let word = '';
+    const $holder = $('.holder-container');
+    $row.children('.tile-slot').each(function () {
+        if ($(this).data('child') != null && $(this).data('child') != undefined) {
+            word += $('#' + $(this).data('child')).attr('name');
+            if (destroy) {
+                $('#' + $(this).data('child')).remove();
+                $(this).data('child', null);
+            }
+            else {
+                const $child = $('#' + $(this).data('child'));
+                $(this).droppable('option', 'drop').call(FirstAvailableHolderSlot($holder), {}, { draggable : $child });
+            }
+        }
+        else if (word != '')
+            destroy = false;
+    });
+    GenerateNewTiles();
+    $row.children('.tile-slot').each(function () {
+        if ($(this).data('child') === null) {
+            const homeless = $('.homeless');
+            if (homeless.length <= 0)
+                return false;
+            const $child = $($('.homeless')[0]);
+            $child.removeClass('homeless');
+            $(this).droppable('option', 'drop').call(FirstAvailableHolderSlot($holder), {}, { draggable : $child });
+        }
+    });
+    DoResize();
+    $('#word-value').text(0);
+    $('#current-word').text('');
+    $('#letters-remaining').text(letterBag.length);
+}
+
+function FirstAvailableHolderSlot($holder) {
+    let $slot = null;
+    $holder.children('.tile-slot').each(function() {
+        if ($(this).data('child') === null || $(this).data('child') == undefined) {
+            $slot = $(this);
+            return false;
+        }
+    });
+    return $slot;
+}
+
 $(document).ready(function () { 
     GenerateTileSlots();
     GenerateHand();
@@ -186,13 +320,24 @@ $(document).ready(function () {
     InitializeDragAndDroppables();
 
     PutTilesInHolder();
+    
+    $('#play-word').on('click', function() { SubmitCurrentWord() });
+
+    $('.row-0 #slot2').data('multiplier', 2);
+    $('.row-0 #slot2').data('fullWord', true);
+    $('.row-0 #slot6').data('multiplier', 2);
+    $('.row-0 #slot6').data('fullWord', false);
+    $('.row-0 #slot8').data('multiplier', 2);
+    $('.row-0 #slot8').data('fullWord', false);
+    $('.row-0 #slot12').data('multiplier', 2);
+    $('.row-0 #slot12').data('fullWord', true);
 });
 
 // function to keep the lines the correct position on resize of the window
 let resizeTimer;
 $(window).resize(function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(DoResize, 300);
+    resizeTimer = setTimeout(DoResize, 100);
 });
 
 function DoResize() {
@@ -227,3 +372,4 @@ function DoResize() {
         }
     });
 }
+

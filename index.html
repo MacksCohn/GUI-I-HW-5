@@ -8,14 +8,23 @@
         <script src="//code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     </head>
     <body>
-        <div class='line-container'>
+        <div id='score-container'>
+            Current Word: <span id='current-word'></span>
+            <br>
+            Current Word Value: <span id='word-value'>0</span>
+            <br>
+            Total Score: <span id='total-score'>0</span>
+            <br>
+            Letters Remaining: <span id='letters-remaining'>93</span>
+            <br>
+            <br>
+            <button id='play-word'>Play Word</button>
+        </div>
+        <div class='line-container row-0'>
             <img id='main-line' src='./img/Scrabble_Board_OneLine.png'>
         </div>
         <div class='holder-container'>
             <img id='tile-holder' src='./img/scrabble-tile-holder.png'>
-        </div>
-        <div id='score-container'>
-            Current Word Value:
         </div>
         <script src='script.js'></script>
     </body>

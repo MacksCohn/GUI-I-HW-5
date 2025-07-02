@@ -1,6 +1,8 @@
 /* Max Cohn */
 body {
     display: block;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 1.2em;
 }
 
 .line-container {
@@ -61,4 +63,5 @@ body {
     width:fit-content;
     height:fit-content;
     margin: 20px auto;
+    text-align: center;
 }
