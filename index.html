@@ -8,7 +8,7 @@
         <script src="//code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     </head>
     <body>
-        <div id='score-container'>
+        <div id='score-container' class='immovable'>
             Current Word: <span id='current-word'></span>
             <br>
             Current Word Value: <span id='word-value'>0</span>
@@ -20,10 +20,10 @@
             <br>
             <button id='play-word'>Play Word</button>
         </div>
-        <div class='line-container row-0'>
+        <div class='line-container immovable row-0'>
             <img id='main-line' src='./img/Scrabble_Board_OneLine.png'>
         </div>
-        <div class='holder-container'>
+        <div class='holder-container immovable'>
             <img id='tile-holder' src='./img/scrabble-tile-holder.png'>
         </div>
         <script src='script.js'></script>
