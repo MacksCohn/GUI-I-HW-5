@@ -1,4 +1,6 @@
 // Max Cohn
+// max_cohn@student.uml.edu
+// GUI-I UML
 const A_ASCII = 65;
 const LAST_ASCII = A_ASCII + 26;
 const NUM_COLUMNS = 15; 
@@ -51,6 +53,7 @@ for (let i = 0; i < quantities[' ']; i++) {
     letterBag.push(' ');
 }
 
+// creates the tile slot in the main line
 function GenerateTileSlots() {
     const $mainLine = $('#main-line');
     for (let tileColumn = 0; tileColumn < NUM_COLUMNS; tileColumn++) {
@@ -63,6 +66,7 @@ function GenerateTileSlots() {
     }
 }
 
+// Create the tile slots in the tile holder
 function GenerateHolderSlots(parent, numColumns) {
     const $parent = $(parent);
     for (let tileColumn = 0; tileColumn < numColumns; tileColumn++) {
@@ -78,6 +82,7 @@ function GenerateHolderSlots(parent, numColumns) {
     }
 }
 
+// Generates the tiles for the first hand
 function GenerateHand() {
     let hand = newHand(7);
     let index = 1;
@@ -98,6 +103,8 @@ function GenerateHand() {
     });
 }
 
+// Create the new tiles between hands
+// Creates the correct amount to get the player back to seven tiles
 function GenerateNewTiles() {
     let numToPull = 7 - $('.tile').length;
     let hand = newHand(numToPull);
@@ -121,6 +128,7 @@ function GenerateNewTiles() {
     InitializeDragAndDroppables();
 }
 
+// Initializes the draggables and droppables, use after adding any new ones too
 function InitializeDragAndDroppables() {
     $('.draggable').draggable({
         snapTolerance: 100,
@@ -137,7 +145,6 @@ function InitializeDragAndDroppables() {
                 }
             });
             if (havePlacedTileOnBoard) {
-                const haveChild = $(this).data('child') != undefined || $(this).data('child') != null;
                 const column = parseInt($(this).attr('id').substring($(this).attr('id').search(/\d/)));
                 let farLeft = false;
                 let farRight = false;
@@ -201,12 +208,14 @@ function InitializeDragAndDroppables() {
     });
 }
 
+// scale the tiles on page resize
 function ResizeTile($tile) {
     const $tileSlot = $('.tile-slot').first();
     $tile.width($tileSlot.width());
     $tile.height($tileSlot.height());
 }
 
+// put the tiles into the holder tile slots
 function PutTilesInHolder() {
     const holderSlots = $('.tile-slot.in-holder.droppable');
     const tiles = $('.tile.draggable');
@@ -218,6 +227,7 @@ function PutTilesInHolder() {
     }
 }
 
+// picks {amount} tiles and returns them in an array
 function newHand(amount) {
     let hand = [];
     let numToPull = letterBag.length >= amount ? amount : letterBag.length;
@@ -226,6 +236,7 @@ function newHand(amount) {
     return hand;
 }
 
+// Picks a random letter from the bag
 function PickLetter() {
     const indexOfLetter = Math.floor(Math.random() * letterBag.length);
     const letter = letterBag[indexOfLetter];
@@ -234,7 +245,7 @@ function PickLetter() {
     return letter;
 }
 
-
+// Get the current row and column of a droppable
 function GetRowAndColumn($droppable) {
     data = {
         row : null,
@@ -250,6 +261,7 @@ function GetRowAndColumn($droppable) {
     return data;
 }
 
+// function I made to make tiles swappable, not used because it was against the rubric
 function SwapTiles(currentTile, heldTile) {
     const $currentTile = $('#' + currentTile);
     const $heldTile = $('#' + heldTile);
@@ -287,6 +299,7 @@ function UpdateWordScore(row, column) {
     $word.text(word);
 }
 
+// Get the value of an individual tiles
 function ScoreTile($tile) {
     let multiplier = $tile.data('fullWord') ? 1 : $tile.data('multiplier');
     if ($tile.data('child') != null && $tile.data('child') != undefined)
@@ -294,6 +307,7 @@ function ScoreTile($tile) {
     return 0;
 }
 
+// Submits a word and adds to the total score, gets new letters
 function SubmitCurrentWord() {
     const currentTotal = parseInt($('#total-score').text());
     const currentScore = parseInt($('#word-value').text());
@@ -334,6 +348,8 @@ function SubmitCurrentWord() {
     $('#letters-remaining').text(letterBag.length);
 }
 
+// Get the first slot to put extra letters back in. Also does not really
+// do anything in the rubric branch
 function FirstAvailableHolderSlot($holder) {
     let $slot = null;
     $holder.children('.tile-slot').each(function() {
@@ -345,6 +361,7 @@ function FirstAvailableHolderSlot($holder) {
     return $slot;
 }
 
+// resizes the game board and tile-slots
 function DoResize() {
     TILE_WIDTH = $('#main-line').width() / NUM_COLUMNS - $('#main-line').width() * (8/960);
     TILE_HEIGHT = $('#main-line').height() - $('#main-line').height() * (8/64);
@@ -378,6 +395,11 @@ function DoResize() {
     });
 }
 
+// Restarts the game by reloading the page.
+function RestartGame() {
+    document.location.reload();
+}
+
 $(document).ready(function () { 
     GenerateTileSlots();
     GenerateHand();
@@ -388,7 +410,9 @@ $(document).ready(function () {
     PutTilesInHolder();
     
     $('#play-word').on('click', function() { SubmitCurrentWord() });
+    $('#restart-game').on('click', function () { RestartGame() });
 
+    // set bonus square values
     $('.row-0 #slot2').data('multiplier', 2);
     $('.row-0 #slot2').data('fullWord', true);
     $('.row-0 #slot6').data('multiplier', 2);

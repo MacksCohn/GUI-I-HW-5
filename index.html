@@ -1,4 +1,7 @@
-<!-- Max Cohn -->
+<!-- Max Cohn 
+    max_cohn@student.uml.edu
+    GUI-I UML
+-->
 <html>
     <head>
         <title>Max's Maniacal Scrabble</title>
@@ -8,7 +11,11 @@
         <script src="//code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     </head>
     <body>
+        <!-- scores here -->
         <div id='score-container' class='immovable'>
+            <button id='restart-game'>Restart Game</button>
+            <br>
+            <br>
             Current Word: <span id='current-word'></span>
             <br>
             Current Word Value: <span id='word-value'>0</span>
@@ -20,6 +27,7 @@
             <br>
             <button id='play-word'>Play Word</button>
         </div>
+        <!-- game stuff here --> 
         <div class='line-container immovable row-0'>
             <img id='main-line' src='./img/Scrabble_Board_OneLine.png'>
         </div>

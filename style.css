@@ -1,10 +1,14 @@
-/* Max Cohn */
+/* Max Cohn 
+ * max_cohn@student.uml.edu
+ * GUI-I UML
+ * */
 body {
     display: block;
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size: 1.2em;
 }
 
+/* lines that hold the board */
 .line-container {
     position: relative;
     width: 96%;
@@ -15,6 +19,7 @@ body {
     width:100%;
 }
 
+/* tile holder */
 .holder-container {
     width:fit-content;
     height: fit-content;
@@ -27,11 +32,7 @@ body {
     width: 50vw;
 }
 
-/* Notes about the tile image
- * There are 16 padding lines, 6px wide
- * 7px wide top and 6px bottom
- * so the tile height is 80px - 13px = 67/80 = 83.75%
- */
+/* Stylization for any tile slot */
 .tile-slot {
     position: absolute;
     top:calc(4/64 * 100%);
@@ -40,7 +41,8 @@ body {
     text-align: center;
 }
 
-.tile-slot:hover, .ui-droppable-hover {
+/* highlight slots when hovering over them */
+.ui-droppable-hover {
     background-color: #2222EE22;
     border-radius: 8px;
 }
@@ -49,6 +51,7 @@ body {
     width: fit-content;
 }
 
+/* make it some images cannot be dragged around */
 .immovable, img {
     user-drag: none;
     -webkit-user-drag: none;
@@ -58,11 +61,13 @@ body {
     -ms-user-select: none;
 }
 
+/* individual tile style */
 .tile {
     filter: drop-shadow(2px 2px 5px #000000AA);
     transform-origin: center center;
 }
 
+/* basic formatting for the scores box */
 #score-container {
     width:fit-content;
     height:fit-content;
