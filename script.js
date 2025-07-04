@@ -128,7 +128,36 @@ function InitializeDragAndDroppables() {
         revertDuration: 200,
     });
     $('.droppable').droppable({
-        accept: '.tile.draggable',
+        accept: function ($draggable) {
+            let havePlacedTileOnBoard = false;
+            $('.droppable:not(.in-holder)').each(function () {
+                if ($(this).data('child') != undefined || $(this).data('child') != null) {
+                    havePlacedTileOnBoard = true;
+                    return false;
+                }
+            });
+            if (havePlacedTileOnBoard) {
+                const haveChild = $(this).data('child') != undefined || $(this).data('child') != null;
+                const column = parseInt($(this).attr('id').substring($(this).attr('id').search(/\d/)));
+                let farLeft = false;
+                let farRight = false;
+                if (column == 0)
+                    farLeft = true;
+                if (column == NUM_COLUMNS - 1)
+                    farRight = true;
+                const leftNeighborChild = $('#slot' + (column-1)).data('child');
+                const rightNeighborChild = $('#slot' + (column+1)).data('child');
+                if (!farLeft && leftNeighborChild != undefined && leftNeighborChild != null)
+                    return true;
+                else if (!farRight && rightNeighborChild != undefined && rightNeighborChild != null)
+                    return true;
+            }
+            else {
+                if ($draggable.hasClass('draggable')) {
+                    return true;
+                }
+            }
+        },
         drop: function(_, $held) {
             $held.draggable.position({
                 my: 'center',
@@ -165,6 +194,9 @@ function InitializeDragAndDroppables() {
             data = GetRowAndColumn($(this));
             if (data.row != null && data.column != null)
                 UpdateWordScore(data.row, data.column);
+            // disables on place to match rubric
+            if (!$(this).hasClass('in-holder'))
+                $held.draggable.draggable('disable');
         },
     });
 }
